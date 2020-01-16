@@ -1,0 +1,539 @@
+.axis { font: 14px sans-serif; stroke-width: 1.6px; font-weight: bold;}
+.truncateProteinNames {
+  max-width:250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        width: 100%;
+        text-align: center;
+        margin: 0px;
+        min-height: 5px;
+        background-color: black;
+        align-items: center;
+		height: 50px;
+		color: white; 
+		font-size: 26px; 
+		font-weight: bold; 
+		font-family: Verdana
+}
+
+.wrapper {
+  background-color: black;
+  color: #444;
+  /* Use flexbox */
+  width: 100%;
+  display: flex;
+}
+
+.box {
+  background-color: #444;
+  color: #fff;
+  border-radius: 5px;
+  padding: 5px;
+  
+  
+  /* Use box-sizing so that element's outerwidth will match width property */
+  box-sizing: border-box;
+  
+  /* Allow box to grow and shrink, and ensure they are all equally sized */
+  flex: 1 1 auto;
+}
+
+.handler {
+  width: 12px;
+  padding: 0;
+  cursor: ew-resize;
+  flex: 0 0 auto;
+}
+
+.handler::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 100%;
+  background: DimGrey;
+  margin: 0 auto;
+}
+
+
+.inner {
+    border-left: 110px solid #0000;
+
+}
+.error-line {
+    stroke: black;
+    stroke-dasharray: 2, 2;
+	
+}
+
+.middle-line {
+    stroke: DarkGray;
+    stroke-dasharray: 2, 2;
+	
+}
+
+.error-cap {
+    stroke: black;
+    stroke-width: 2px;
+    stroke-type: solid;
+}
+
+.scatter-line {
+    fill: none;
+	stroke-width: 2px;
+	
+}
+
+.tooltip_graph1 {
+    pointer-events: none;
+    position: absolute;
+    height: auto;
+    width: auto;
+    padding: 15px;
+    background: #4f4f4f;
+    color: white;
+    font-family: Monospace, Serif;
+}
+
+.tittle_plots {
+	color: #2E6E9E;
+	font-size: 24px;
+	font-weight: bold;
+}
+.tooltip_graph1:after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    /* To the left of the tooltip */
+    margin-top: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent #4f4f4f transparent transparent;
+}
+
+.plot-bg {
+    fill: transparent;
+}
+
+body {
+	color: #000000;
+	background-color: #FFFFFF;
+	font: 12px, Verdana, sans-serif;
+}
+
+h1 {
+	color: #2E6E9E;
+	font-size: 24px;
+	font-weight: bold;
+}
+
+h2 {
+	color: #2E6E9E;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+h3 {
+	color: #2E6E9E;
+}
+
+.info {
+	color: green;
+	font-weight: bold;
+}
+
+.error {
+	color: red;
+	font-weight: bold;
+}
+
+.small {
+	font-size: 10px;
+}
+
+.table {
+	border: thin solid black;
+}
+
+.tableHeader {
+	background-color: #79A4C4;
+	color: #fff;
+	padding: 5px 3px 5px 3px;
+	font-weight: bold;
+	text-align: left;
+}
+
+.ui-priority-secondary td {
+	background-color: #ECEBE8;
+}
+
+.evenRow {
+	background-color: #D6D3CE;
+}
+
+.oddRow {
+	background-color: #ECEBE8;
+}
+
+.hoverRow {
+	background-color: #C8DCEC;
+}
+
+.alignLeft {
+	text-align: left
+}
+
+.alignRight {
+	text-align: right
+}
+
+.alignCenter {
+	text-align: center
+}
+
+.dojoDialog {
+	background: #eee;
+	border: 1px solid #999;
+	-moz-border-radius: 5px;
+	padding: 4px; /*positioning outside of the visible scope
+to prevent some ui glitches visibility hidden does not work*/
+	position: absolute;
+	left: -800px;
+	top: -800px;
+}
+
+/* Label/Value Pairs */
+table.attributes {
+	border-collapse: collapse;
+	border:2px solid white;
+}
+
+TR.attributes {
+	border-collapse: collapse;
+	vertical-align: top;
+}
+
+td.attributes {
+	border:1px solid #DEDEDE;
+	padding: 0.25em 0.5em;
+}
+
+.label {
+	border:1px solid #DEDEDE;
+	padding: 0.25em 0.5em;
+	width:15em;
+	vertical-align:top;
+	color: #2E6E9E;
+}
+
+.value {
+	border:1px solid #DEDEDE;
+	padding: 0.25em 0.5em;
+}
+
+/* Simple Table */
+table.simple {
+	border-collapse: collapse;
+	border:1px solid;
+	font-size: 11px;
+	border-color: rgb(166, 201, 226);
+}
+
+.simple tr {
+	border-collapse: collapse;
+	vertical-align: middle;
+}
+
+.simple th {
+	border:1px solid #DEDEDE;
+	color: rgb(46, 110, 158);
+	background-color: rgb(223,239,252);
+	padding: 0.6em 1em;
+	font-weight=700;
+}
+
+.simple td{
+	border:1px solid #DEDEDE;
+	padding: 0.4em 1em;
+}
+
+.evenRow {
+	background-color: rgb(236,235,232);
+}
+
+.oddRow {
+	background-color: #FFFFFF;
+}
+
+/* Links */
+a:link,a:active,a:visited {
+	text-decoration: none;
+	color: #c30;
+}
+
+a:hover {
+	text-decoration: underline;
+	color: #c30;
+}
+	
+/* Navigation */
+a.navigation:link,a.navigation:active,a.navigation:visited {
+	text-decoration: none;
+	color: #000000;;
+}
+
+a.navigation:hover {
+	text-decoration: underline;
+	color: #000000;;
+}
+
+/* Tabs */
+.activeTab {
+	background-color: #79A4C4;
+	color: #fff;
+	font: 12px;
+	font-weight: bold;
+}
+
+.inactiveTab {
+	background-color: #C8DCEC;
+	color: #000;
+	font: 12px;
+	font-weight: bold;
+}
+
+/* Login */
+TABLE.LoginBox {
+	
+}
+
+TD.LoginBox {
+	border-width: thin;
+	border-style: ridge;
+	padding-left: 2em;
+	padding-right: 2em;
+	padding-top: 2em;
+	padding-bottom: 0em;
+}
+
+/* GENERAL */
+.spinner {
+	padding: 5px;
+	position: absolute;
+	right: 0;
+}
+
+/* NAVIGATION MENU */
+.nav {
+	background: #fff url(../images/skin/shadow.jpg) bottom repeat-x;
+	border: 1px solid #ccc;
+	border-style: solid none solid none;
+	margin-top: 5px;
+	padding: 7px 12px;
+}
+
+.menuButton {
+	font-size: 10px;
+	padding: 0 5px;
+}
+
+.menuButton a {
+	color: #333;
+	padding: 4px 6px;
+}
+
+.menuButton a.home {
+	background: url(../images/skin/house.png) center left no-repeat;
+	color: #333;
+	padding-left: 25px;
+}
+
+.menuButton a.list {
+	background: url(../images/skin/database_table.png) center left no-repeat
+		;
+	color: #333;
+	padding-left: 25px;
+}
+
+.menuButton a.create {
+	background: url(../images/skin/database_add.png) center left no-repeat;
+	color: #333;
+	padding-left: 25px;
+}
+
+/* MESSAGES AND ERRORS */
+.message {
+	background: #f3f8fc url(../images/skin/information.png) 8px 50%
+		no-repeat;
+	border: 1px solid #b2d1ff;
+	color: #006dba;
+	margin: 10px 0 5px 0;
+	padding: 5px 5px 5px 30px
+}
+
+div.errors {
+	background: #fff3f3;
+	border: 1px solid red;
+	color: #cc0000;
+	margin: 10px 0 5px 0;
+	padding: 5px 0 5px 0;
+}
+
+div.errors ul {
+	list-style: none;
+	padding: 0;
+}
+
+div.errors li {
+	background: url(../images/skin/exclamation.png) 8px 0% no-repeat;
+	line-height: 16px;
+	padding-left: 30px;
+}
+
+td.errors select {
+	border: 1px solid red;
+}
+
+td.errors input {
+	border: 1px solid red;
+}
+
+/* LIST */
+.list table {
+	border-collapse: collapse;
+}
+
+.list th,.list td {
+	border-left: 1px solid #ddd;
+}
+
+.list th:hover,.list tr:hover {
+	background: #b2d1ff;
+}
+
+/* PAGINATION */
+.paginateButtons {
+	background: #fff url(../images/skin/shadow.jpg) bottom repeat-x;
+	border: 1px solid #ccc;
+	border-top: 0;
+	color: #666;
+	font-size: 10px;
+	overflow: hidden;
+	padding: 10px 3px;
+}
+
+.paginateButtons a {
+	background: #fff;
+	border: 1px solid #ccc;
+	border-color: #ccc #aaa #aaa #ccc;
+	color: #666;
+	margin: 0 3px;
+	padding: 2px 6px;
+}
+
+.paginateButtons span {
+	padding: 2px 3px;
+}
+
+/* DIALOG */
+.dialog table {
+	padding: 5px 0;
+}
+
+.prop {
+	padding: 5px;
+}
+
+.prop .name {
+	text-align: left;
+	width: 15%;
+	white-space: nowrap;
+}
+
+.prop .value {
+	text-align: left;
+	width: 85%;
+}
+
+/* ACTION BUTTONS */
+.buttons {
+	background: #fff url(../images/skin/shadow.jpg) bottom repeat-x;
+	border: 1px solid #ccc;
+	color: #666;
+	font-size: 10px;
+	margin-top: 5px;
+	overflow: hidden;
+	padding: 0;
+}
+
+.buttons input {
+	background: #fff;
+	border: 0;
+	color: #333;
+	cursor: pointer;
+	font-size: 10px;
+	font-weight: bold;
+	margin-left: 3px;
+	overflow: visible;
+	padding: 2px 6px;
+}
+
+.buttons input.delete {
+	background: transparent url(../images/skin/database_delete.png) 5px 50%
+		no-repeat;
+	padding-left: 28px;
+}
+
+.buttons input.edit {
+	background: transparent url(../images/skin/database_edit.png) 5px 50%
+		no-repeat;
+	padding-left: 28px;
+}
+
+.buttons input.save {
+	background: transparent url(../images/skin/database_save.png) 5px 50%
+		no-repeat;
+	padding-left: 28px;
+}
+
+/* Popup windows */
+.popup {
+	border-radius:1em;
+	-moz-border-radius:1em;
+	color:#000000;
+	padding:10px;
+	text-align:justify;
+	text-indent:5px;
+	background:#FFF;
+}
+.popup .popin-content {
+	padding:10px;
+}
+.popup .popin-content p {
+	padding:0;
+	margin:0 0 1em;
+}
+
+/* Context Menu */
+.context-menu {
+	border-radius:1em;
+	-moz-border-radius:1em;
+  border: 1px solid #999,
+	color:#000000;
+	padding:8px;
+	margin:0px;
+	text-align:left;
+	text-indent:0px;
+	background:#C0C0C0;
+	display:none;
+	font-size:10px;
+}
+
