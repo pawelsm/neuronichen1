@@ -1,0 +1,737 @@
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<html lang="en-us">
+<head>
+
+	<link type="text/css" href="./css/jquery.dataTables.min.css" rel="stylesheet">
+	<link type="text/css" href="./css/bootstrap.min.css" rel="stylesheet">
+	<link type="text/css" href="./css/dataTables.bootstrap.min.css" rel="stylesheet">
+	<link type="text/css" href="./css/fixingbug.css" rel="stylesheet">
+	<link type="text/css" href="./css/jquery.autocomplete.css" rel="stylesheet">	
+	<link type="text/css" href="./css/jquery.uix.multiselect.css" rel="stylesheet">	
+	
+	<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+	<script type="text/javascript" src="./js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="./js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="./js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="./js/dataTables.bootstrap.min.js"></script>
+	
+	<title>neuronicheproteome</title>
+	<link rel="shortcut icon" href="mice.ico" /> 
+	<link type="text/css" href="./css/main.css" rel="stylesheet">
+</head>
+<body style="background: black;">
+
+<script>	
+$(document).ready(function() {	
+
+		var handler = document.querySelector('.handler');
+		var wrapper = handler.closest('.wrapper');
+		var boxA = wrapper.querySelector('.box');
+		var isHandlerDragging = false;
+
+		document.addEventListener('mousedown', function(e) {
+		// If mousedown event is fired from .handler, toggle flag to true
+		if (e.target === handler) {
+			isHandlerDragging = true;
+		}
+		});
+
+		document.addEventListener('mousemove', function(e) {
+		// Don't do anything if dragging flag is false
+		if (!isHandlerDragging) {
+			return false;
+		}
+
+		// Get offset
+		var containerOffsetLeft = wrapper.offsetLeft;
+
+		// Get x-coordinate of pointer relative to container
+		var pointerRelativeXpos = e.clientX - containerOffsetLeft;
+  
+		// Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
+		var boxAminWidth = 450;
+
+		// Resize box A
+		// * 8px is the left/right spacing between .handler and its inner pseudo-element
+		// * Set flex-grow to 0 to prevent it from growing
+		boxA.style.width = (Math.max(boxAminWidth, pointerRelativeXpos - 8)) + 'px';
+		boxA.style.flexGrow = 0;
+		});
+
+
+		document.addEventListener('mouseup', function(e) {
+			// Turn off dragging flag when user mouse is up
+			isHandlerDragging = false;
+		});
+
+		// Populating the datable for LMSS
+		var tableOrganells = $('#tableLMSS').DataTable({		    		
+		language: {
+			searchPlaceholder: "all column searching.."
+		},
+			select: true,
+		    "ajax": "./json/LMSS4.txt",		    			
+		    "deferRender": true,
+		    "sScrollX": "100%",
+	        "scrollX": true,
+			"columnDefs": [
+				{
+					"targets": [2,3,4,5,6,7,8,9],
+					"visible": false,
+					"searchable": false
+				},
+				{targets:1,className:"truncateProteinNames"},
+			
+				],
+		 });
+		 
+		   
+		  // Populating the datable for QDSP
+		 var tableProteins = $('#tableQDPS').DataTable({				
+		language: {
+			searchPlaceholder: "all column searching.."
+		},	
+			select: true,
+		    "ajax": "./json/QDSP_Final_json.txt",
+		    "deferRender": true,
+		    "sScrollX": "100%",
+	        "scrollX": true,
+			"columnDefs": [
+				{
+					"targets": [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
+					"visible": false,
+					"searchable": false
+				},
+				{targets:1,className:"truncateProteinNames"},
+			],
+		 });
+				
+				
+		var tableLMSS = $('#tableLMSS').DataTable();				
+		
+		$('#tableLMSS tbody').on('click', 'tr', function () {
+			
+            tableLMSS.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+			
+			var data = tableLMSS.row( this ).data();
+			d3.select("#plot_LMSS").selectAll("*").remove();
+			
+			// means
+			cx_mean=data[2]
+			ob_mean=data[3]
+			svz_mean=data[4]
+			mvz_mean=data[5]
+			// stdd
+			cx_std=data[6]
+			ob_std=data[7]
+			svz_std=data[8]
+			mvz_std=data[9]
+			
+			let d_lmss = [];
+		
+			d_lmss.push({x:0.3,    y:cx_mean,    e:cx_std,  pc:'#1E90FF'})
+			d_lmss.push({x:0.6,    y:ob_mean,    e:ob_std,  pc:'#9400D3'})
+			d_lmss.push({x:0.9,    y:svz_mean,   e:svz_std,  pc:'#F4E555'})
+			d_lmss.push({x:1.2,    y:mvz_mean,   e:mvz_std,  pc:'green'})
+			
+			// Account for error bars extending beyond y limits
+			let yMax_LMSS = d3.max(d_lmss, function(d) { return d.y; }) + d3.max(d_lmss, function(d) { return d.e; });;
+			let yMin_LMSS = d3.min(d_lmss, function(d) { return d.y; }) - d3.max(d_lmss, function(d) { return d.e; });;
+			
+
+			var margin_LMSS = { top: 20,right: 20,bottom: 30, left: 60},
+			width_LMSS = 380 - margin_LMSS.left - margin_LMSS.right,
+			height_LMSS = 380 - margin_LMSS.top - margin_LMSS.bottom,	
+			rad = 5;
+		
+			var ticks_LMSS = [0.3,0.6,0.9,1.2];
+			var tickLabels_LMSS= ["Cx","OB","SVZ","MVZ"]
+
+			xScale_LMSS = d3.scaleLinear()
+				.range([0, width_LMSS])
+				.domain([0, 1.5]).nice();
+
+			// Account for error bars extending beyond y limits
+		
+			yScale_LMSS = d3.scaleLinear()
+				.range([height_LMSS, 0])
+				.domain([yMin_LMSS, yMax_LMSS]).nice();
+
+			var xAxis_LMSS = d3.axisBottom(xScale_LMSS).tickValues(ticks_LMSS).tickFormat(function(d,i){ return tickLabels_LMSS[i] });
+			yAxis_LMSS = d3.axisLeft(yScale_LMSS).ticks(12 * height_LMSS / width_LMSS);
+		
+			var svg_LMSS = d3.select("#plot_LMSS").append("svg")
+				.attr("width", width_LMSS + margin_LMSS.left + margin_LMSS.right)
+				.attr("height", height_LMSS + margin_LMSS.top + margin_LMSS.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin_LMSS.left + "," + margin_LMSS.top + ")");
+			
+			// Tittle of the graph
+			svg_LMSS.append("text")
+				.attr("id", "tittle_plot_lmss")
+				.attr("class", "tittle_plots")
+				.attr("x", width_QDSP / 2 )
+				.attr("y", 0)
+				.style("text-anchor", "middle")
+						
+			svg_LMSS.append("g").attr("class", "axis axis--x")
+				.attr("transform", "translate(" + 0 + "," + height_LMSS + ")")
+				
+				.call(xAxis_LMSS);
+
+			svg_LMSS.append("g").attr("class", "axis axis--y").call(yAxis_LMSS)
+			
+
+			svg_LMSS.append("text").attr("transform", "rotate(-90)")
+				.attr("y", 0 - margin_QDSP.left)
+				.attr("x", 0 - (height_QDSP / 2))
+				.attr("dy", "1em")
+				.style("text-anchor", "middle")
+				.style("font-weight", "bold")
+				.style("font-size", "12px")
+				.text("MS-intentsity(LFQ,log2)");
+		
+			svg_LMSS.append("g")
+				.attr("id", "bars")
+				.selectAll('g')
+				.data(d_lmss).enter()
+				.append('g')
+				.attr('class', function(d,i) {
+					return 'bar-' + i
+				})
+				.call(d3_rect, rad, "#1E90FF")
+				.call(d3_error_LMSS, rad)
+				.on("mouseover", function(d){ ttEnter(d); })
+				.on("mouseout", function(d){ ttExit(d); });
+				
+			 //Change tittle			
+			 document.getElementById('tittle_plot_lmss').textContent = data[0]
+				
+		});
+				
+		var tableQDPS = $('#tableQDPS').DataTable();
+			$('#tableQDPS tbody').on('click', 'tr', function () {
+				
+			tableQDPS.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+			var data = tableQDPS.row( this ).data();
+				
+			// Removing elements			
+			svg_QDSP.selectAll("circle").remove()
+			svg_QDSP.selectAll("path.scatter-line").remove()
+			svg_QDSP.selectAll("line.error-line").remove()
+			svg_QDSP.selectAll("line.error-cap").remove()
+			
+			// CX - means
+			cx_fr1_mean=data[2]
+			cx_fr2_mean=data[3]
+			cx_fr3_mean=data[4]
+			cx_fr4_mean=data[5]
+			// OB - means
+			ob_fr1_mean=data[6]
+			ob_fr2_mean=data[7]
+			ob_fr3_mean=data[8]
+			ob_fr4_mean=data[9]
+			//SVZ - means
+			svz_fr1_mean=data[10]
+			svz_fr2_mean=data[11]
+			svz_fr3_mean=data[12]
+			svz_fr4_mean=data[13]
+				
+			// CX - STD					
+			cx_fr1_std=data[14]
+			cx_fr2_std=data[15]
+			cx_fr3_std=data[16]
+			cx_fr4_std=data[17]					
+			// OB - STD					
+			ob_fr1_std=data[18]
+			ob_fr2_std=data[19]
+			ob_fr3_std=data[20]
+			ob_fr4_std=data[21]
+			// SVZ - STD					
+			svz_fr1_std=data[22]
+			svz_fr2_std=data[23]
+			svz_fr3_std=data[24]
+			svz_fr4_std=data[25]
+			
+			
+			let d_cx = [];
+			d_cx.push({x:0.4,   y:cx_fr1_mean,   e:cx_fr1_std,   pc:'red'})
+			d_cx.push({x:1.4,   y:cx_fr2_mean,   e:cx_fr2_std,  pc:'red'})
+			d_cx.push({x:2.4,   y:cx_fr3_mean,   e:cx_fr3_std,  pc:'red'})
+			d_cx.push({x:3.4,   y:cx_fr4_mean,   e:cx_fr4_std,  pc:'red'})
+			
+			let d_ob = [];
+			d_ob.push({x:0.5,  	y:ob_fr1_mean,   e:ob_fr1_std,   pc:'blue'})
+			d_ob.push({x:1.5,  	y:ob_fr2_mean,   e:ob_fr2_std,  pc:'blue'})
+			d_ob.push({x:2.5,  	y:ob_fr3_mean,   e:ob_fr3_std,  pc:'blue'})
+			d_ob.push({x:3.5,  	y:ob_fr4_mean,   e:ob_fr4_std,  pc:'blue'})
+			
+			let d_svz = [];
+			d_svz.push({x:0.6,  y:svz_fr1_mean,   e:svz_fr1_std,   pc:'green'})
+			d_svz.push({x:1.6,  y:svz_fr2_mean,   e:svz_fr2_std,  pc:'green'})
+			d_svz.push({x:2.6,  y:svz_fr3_mean,   e:svz_fr3_std,  pc:'green'})
+			d_svz.push({x:3.6,  y:svz_fr4_mean,   e:svz_fr4_std,  pc:'green'})
+			
+			//***
+			// Add plot elements
+			svg_QDSP.call(d3_line,d_cx,"#1E90FF");
+			svg_QDSP.call(d3_line,d_ob,"#9400D3");
+			svg_QDSP.call(d3_line,d_svz,"#F4E555");
+
+			svg_QDSP.append("g")
+				.attr("id", "points")
+				.selectAll('g')
+				.data(d_cx).enter()
+				.append('g')
+				.attr('class', function(d,i) {
+				return 'point-' + i
+			})
+			.call(d3_error_QDSP, rad)
+			.call(d3_circle, rad, "#1E90FF")
+			.on("mouseover", function(d){ ttEnter(d); })
+			.on("mouseout", function(d){ ttExit(d); });
+
+			svg_QDSP.append("g")
+				.attr("id", "points")
+				.selectAll('g')
+				.data(d_ob).enter()
+				.append('g')
+				.attr('class', function(d,i) {
+				return 'point-' + i
+			})
+			.call(d3_error_QDSP, rad)
+			.call(d3_circle, rad, "#9400D3")
+			.on("mouseover", function(d){ ttEnter(d); })
+			.on("mouseout", function(d){ ttExit(d); });
+
+			svg_QDSP.append("g")
+				.attr("id", "points")
+				.selectAll('g')
+				.data(d_svz).enter()
+				.append('g')
+				.attr('class', function(d,i) {
+				return 'point-' + i
+			})
+			.call(d3_error_QDSP, rad)
+			.call(d3_circle, rad, "#F4E555")
+			.on("mouseover", function(d){ ttEnter(d); })
+			.on("mouseout", function(d){ ttExit(d); });
+			//***
+			document.getElementById('tittle_plot_qdsp').textContent = data[0]
+		} );
+		
+		// MAIN
+		// *************** QDSP *****************************************
+		var margin_QDSP = { top: 20, right: 20, bottom: 30, left: 60 },
+		width_QDSP = 380 - margin_QDSP.left - margin_QDSP.right,
+		height_QDSP = 380 - margin_QDSP.top - margin_QDSP.bottom,
+		rad = 5;
+		
+		var ticks_QDSP = [0.5,1.5,2.5,3.5];
+		var tickLabels_QDSP= ["FR1","FR2","FR3","FR4"]
+	
+		var xScale_QDSP = d3.scaleLinear()
+			.range([0, width_QDSP])
+			.domain([0, 4]).nice();
+
+		let yMax_QDSP =  2;
+		let yMin_QDSP = -2;
+
+		var yScale_QDSP = d3.scaleLinear()
+			.range([height_QDSP, 0])
+			.domain([yMin_QDSP, yMax_QDSP]).nice();
+
+		var xAxis_QDSP = d3.axisBottom(xScale_QDSP).tickValues(ticks_QDSP).tickFormat(function(d,i){ return tickLabels_QDSP[i] });
+			yAxis_QDSP = d3.axisLeft(yScale_QDSP).ticks(12 * height_QDSP / width_QDSP);
+
+		var line_QDSP = d3.line()
+			.x(function(d) {
+				return xScale_QDSP(d.x);
+				})
+			.y(function(d) {
+				return yScale_QDSP(d.y);
+			});
+		var tooltip = d3.select("body").append("div")
+			.attr("class", "tooltip_graph1")
+			.style("visibility", "hidden");
+
+		var svg_QDSP = d3.select("#plot_QDSP").append("svg")
+			.attr("width", width_QDSP + margin_QDSP.left + margin_QDSP.right)
+			.attr("height", height_QDSP + margin_QDSP.top + margin_QDSP.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin_QDSP.left + "," + margin_QDSP.top + ")");
+
+		// Tittle of the graph
+		svg_QDSP.append("text")
+			.attr("id", "tittle_plot_qdsp")
+			.attr("class", "tittle_plots")
+			.attr("x", width_QDSP / 2 )
+			.attr("y", 0)
+			.style("text-anchor", "middle")
+		
+		// Text label for the Y axis
+		svg_QDSP.append("text")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 0 - margin_QDSP.left)
+			.attr("x", 0 - (height_QDSP / 2))
+			.attr("dy", "1em")
+			.style("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.style("font-size", "12px")
+			.text("Z-Score (Relative MS-intentsity (log2))");
+
+		// Add background for plot
+		svg_QDSP.call(d3_bg);
+
+		// Add Middle Line
+		svg_QDSP.call(d3_ver_line);
+		
+		// Add Axis labels
+		svg_QDSP.call(d3_axes_QDSP);
+		
+
+		// *************** LMSS *****************************************
+		var margin_LMSS = { top: 20,right: 20,bottom: 30, left: 60},
+		width_LMSS = 380 - margin_LMSS.left - margin_LMSS.right,
+		height_LMSS = 380 - margin_LMSS.top - margin_LMSS.bottom,	
+		rad = 5;
+		
+		var ticks_LMSS = [0.3,0.6,0.9,1.2];
+		var tickLabels_LMSS= ["Cx","OB","SVZ","MVZ"]
+
+		var xScale_LMSS = d3.scaleLinear()
+			.range([0, width_LMSS])
+			.domain([0, 1.5]).nice();
+
+		// Account for error bars extending beyond y limits
+		let yMax_LMSS = 32.5;
+		let yMin_LMSS = 26.5;
+
+		var yScale_LMSS = d3.scaleLinear()
+			.range([height_LMSS, 0])
+			.domain([yMin_LMSS, yMax_LMSS]).nice();
+
+		var xAxis_LMSS = d3.axisBottom(xScale_LMSS).tickValues(ticks_LMSS).tickFormat(function(d,i){ return tickLabels_LMSS[i] });
+		yAxis_LMSS = d3.axisLeft(yScale_LMSS).ticks(12 * height_LMSS / width_LMSS);
+		
+		var svg_LMSS = d3.select("#plot_LMSS").append("svg")
+			.attr("width", width_LMSS + margin_LMSS.left + margin_LMSS.right)
+			.attr("height", height_LMSS + margin_LMSS.top + margin_LMSS.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin_LMSS.left + "," + margin_LMSS.top + ")");
+
+		// Tittle of the graph
+		svg_LMSS.append("text")
+			.attr("id", "tittle_plot_lmss")
+			.attr("class", "tittle_plots")
+			.attr("x", width_QDSP / 2 )
+			.attr("y", 0)
+			.style("text-anchor", "middle")
+
+		// Text label for the Y axis
+		svg_LMSS.append("text")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 0 - margin_LMSS.left)
+			.attr("x", 0 - (height_LMSS / 2))
+			.attr("dy", "1em")
+			.style("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.style("font-size", "12px")
+			.text("MS-intentsity(LFQ,log2)");
+
+		// Add background for plot
+		
+		svg_LMSS.call(d3_bg);
+		
+
+		// Add Axis labels
+
+		svg_LMSS.call(d3_axes_LMSS);
+
+		// Add Middle Line
+		svg_QDSP.call(d3_ver_line);	
+		// General Functions
+	
+		function d3_error_QDSP(selection, rad) {
+			selection.append("line")
+				.attr("class", "error-line")
+				.attr("x1", function(d) {
+					return xScale_QDSP(d.x);
+				})			
+				.attr("y1", function(d) {
+					return yScale_QDSP(d.y + d.e);
+				})
+				.attr("x2", function(d) {
+					return xScale_QDSP(d.x);
+				})
+				.attr("y2", function(d) {
+				return yScale_QDSP(d.y - d.e);
+				});		
+				// Add Error Caps
+			selection.append("line")
+				.attr("class", "error-cap")
+				.call(errorCap_QDSP, rad, 'top');
+				selection.append("line")
+				.attr("class", "error-cap")
+				.call(errorCap_QDSP, rad, 'bottom');
+		}
+		function d3_error_LMSS(selection, rad) {
+			selection.append("line")
+				.attr("class", "error-line")
+				.attr("x1", function(d) {
+					return xScale_LMSS(d.x);
+				})			
+				.attr("y1", function(d) {
+					return yScale_LMSS(d.y + d.e);
+				})
+				.attr("x2", function(d) {
+					return xScale_LMSS(d.x);
+				})
+				.attr("y2", function(d) {
+				return yScale_LMSS(d.y - d.e);
+				});		
+				// Add Error Caps
+			selection.append("line")
+				.attr("class", "error-cap")
+				.call(errorCap_LMSS, rad, 'top');
+				selection.append("line")
+				.attr("class", "error-cap")
+				.call(errorCap_LMSS, rad, 'bottom');
+		}
+
+
+function d3_ver_line(selection) {
+    selection.append("line")
+        .attr("class", "middle-line")
+        .attr("x1", function(d) {
+            return xScale_QDSP(0);
+        })
+        .attr("y1", function(d) {
+            return yScale_QDSP(0);
+        })
+        .attr("x2", function(d) {
+            return xScale_QDSP(4);
+        })
+        .attr("y2", function(d) {
+            return yScale_QDSP(0);
+        });
+}
+
+
+
+function errorCap_QDSP(selection, rad, direction) {
+    selection.attr("class", "error-cap")
+        .attr("x1", function(d) {
+            return xScale_QDSP(d.x) - rad;
+        })
+        .attr("y1", function(d) {
+            return direction === 'top' ? yScale_QDSP(d.y + d.e) : yScale_QDSP(d.y - d.e);
+        })
+        .attr("x2", function(d) {
+            return xScale_QDSP(d.x) + rad;
+        })
+        .attr("y2", function(d) {
+            return direction === 'top' ? yScale_QDSP(d.y + d.e) : yScale_QDSP(d.y - d.e);
+        });
+}
+
+function errorCap_LMSS(selection, rad, direction) {
+    selection.attr("class", "error-cap")
+        .attr("x1", function(d) {
+            return xScale_LMSS(d.x) - rad;
+        })
+        .attr("y1", function(d) {
+            return direction === 'top' ? yScale_LMSS(d.y + d.e) : yScale_LMSS(d.y - d.e);
+        })
+        .attr("x2", function(d) {
+            return xScale_LMSS(d.x) + rad;
+        })
+        .attr("y2", function(d) {
+            return direction === 'top' ? yScale_LMSS(d.y + d.e) : yScale_LMSS(d.y - d.e);
+        });
+}
+function d3_circle(selection, rad, color) {
+    selection.append('circle')
+        .attr('class', 'point')
+        .attr("cx", function(d) {
+            return xScale_QDSP(d.x);
+        })
+        .attr("cy", function(d) {
+            return yScale_QDSP(d.y);
+        })
+        .attr("r", rad)
+        .style("fill", color);
+}
+
+function d3_rect(selection, rad, color) {
+		selection.append('rect')
+        .attr('class', 'bar')
+        .attr("x", function(d) {
+            return xScale_LMSS(d.x)-20;
+        })
+        .attr("y", function(d) {
+            return yScale_LMSS(d.y);
+        })
+		.attr('fill', function(d) {
+            return d.pc;
+        })
+        .attr("width", 40)
+		.attr("height", function(d) {
+            return height_LMSS-yScale_LMSS(d.y);
+        })
+       
+}
+
+function d3_line(selection,data_l,color) {
+    selection.append("g")
+        .append('path').data([data_l])///// **********
+        .attr('class', 'scatter-line')
+        .attr('d', line_QDSP)
+        .attr('stroke', color);
+}
+
+
+function d3_axes_QDSP(selection) {
+    // Add x
+    selection.append("g").attr("class", "axis axis--x")
+        .attr("transform", "translate(" + 0 + "," + height_QDSP + ")")
+		.attr('stroke-width', "1.6px")
+        .call(xAxis_QDSP);
+
+    // Add y
+    selection.append("g").attr("class", "axis axis--y").call(yAxis_QDSP)
+		.attr('stroke-width', "1.6px")
+}
+function d3_axes_LMSS(selection) {
+    // Add x
+    selection.append("g").attr("class", "axis axis--x")
+        .attr("transform", "translate(" + 0 + "," + height_LMSS + ")")
+		.attr('stroke-width', "1.6px")
+        .call(xAxis_LMSS);
+
+    // Add y
+    selection.append("g").attr("class", "axis axis--y").call(yAxis_LMSS);
+	
+}
+function d3_bg(selection) {
+    selection.append("g").append("rect")
+        .attr("class", "plot-bg")
+        .attr("width", width_QDSP)
+        .attr("height", height_QDSP);
+}
+
+function ttEnter(d) {
+
+    tooltip.html(d.y.toFixed(5) + " &plusmn; " + d.e.toFixed(5))
+        .style("visibility", "visible")
+        .style("top", (event.pageY-17)+"px").style("left",(event.pageX+25)+"px");
+}
+
+function ttExit(d) {
+    tooltip.style("visibility", "hidden");
+}
+
+});
+
+</script>
+<script type="text/javascript" src="./js/functions_line_errors.js"></script>	                              
+	
+	
+	<div class="header">NEUROGENIC NICHE PROTEOME</div>
+	
+	<!--LEFT SIDE-->
+	<div class="wrapper">
+	<div style="background: white;  width:50%; height:100%; float:left; " class="box">
+		<div id="plot_LMSS"></div>
+		<div style="width:200px; height:30px; "></div>
+		<table id="tableLMSS" class="table table-striped table-bordered table-condensed" cellspacing="0" width="100%">
+			<thead>
+			<tr>
+			<th>LMSS (Library-Matched Single Shots)</th>
+			</tr>
+			<tr>			
+			<th>Gene names</th><!--1-->
+			<th>Protein names</th><!--2-->
+			<th>Cx - Mean abundance (log2)</th><!--3-->
+			<th>OB - Mean abundance (log2)</th><!--4-->
+			<th>SVZ - Mean abundance (log2)</th><!--5-->
+			<th>MVZ - Mean abundance (log2)</th><!--6-->
+			<th>stddev Cx</th><!--7-->
+			<th>stddev OB</th><!--8-->
+			<th>stddev SVZ</th><!--9-->
+			<th>stddev MVZ</th><!--10-->
+			<th>Matrisome</th><!--11-->
+			<th>Matrisome Divisions</th><!--12-->
+			<th>Matrisome categories</th><!--13-->					
+			<th>SVZ vs Cx: T-test significant</th><!--14-->			
+			<th>SVZ vs Cx: p-value</th><!--15-->		
+		
+			<th>SVZ vs Cx: Difference</th><!--17-->						
+			<th>OB vs Cx: T-test significant</th><!--18-->	
+			<th>OB vs Cx: p-value</th><!--19-->		
+		
+			<th>OB vs Cx: Difference</th><!--21-->						
+			<th>SVZ vs MVZ: T-test significant</th><!--22-->			
+			<th>SVZ vs MVZ: p-value</th><!--23-->		
+	
+			<th>SVZ vs MVZ: Difference</th><!--25-->						
+			<th>SVZ vs OB: T-test significant</th><!--26-->			
+			<th>SVZ vs OB: p-value</th><!--27-->		
+	
+			<th>SVZ vs OB: Difference</th><!--29-->											
+			</tr>
+			</thead> 
+		</table>
+	</div>
+	<!--RIGHT SIDE-->
+	<div class="handler"></div>
+	<div style="background: white; width:50%; height:100%; float:right"; class="box">
+		<div id="plot_QDSP"></div>
+		<div class="inner"><img src = "images/legendQDSP.png" height="30" width="220" /></div>
+		<table id="tableQDPS" class="table table-striped table-bordered table-condensed" cellspacing="0" width="100%">
+			<thead>
+				<tr>
+				<th>QDSP (Quantitative Detergent Solubility Proﬁles) </th>
+				</tr>
+				<tr>	
+				<th>Gene names</th><!-- 0 -->
+				<th>Protein names</th><!-- 1 -->
+				<th>Cx_FR1 (z-scored mean abundance (log2))</th><!-- 2 -->
+				<th>Cx_FR2 (z-scored mean abundance (log2))</th><!-- 3 -->
+				<th>Cx_FR3 (z-scored mean abundance (log2))</th><!-- 4 -->
+				<th>Cx_FR4 (z-scored mean abundance (log2))</th><!-- 5 -->
+				<th>OB_FR1 (z-scored mean abundance (log2))</th><!-- 6 -->
+				<th>OB_FR2 (z-scored mean abundance (log2))</th><!-- 7 -->
+				<th>OB_FR3 (z-scored mean abundance (log2))</th><!-- 8 -->
+				<th>OB_FR4 (z-scored mean abundance (log2))</th><!-- 9 -->
+				<th>SVZ_FR1 (z-scored mean abundance (log2))</th><!-- 10 -->
+				<th>SVZ_FR2 (z-scored mean abundance (log2))</th><!-- 11 -->
+				<th>SVZ_FR3 (z-scored mean abundance (log2))</th><!-- 12 -->
+				<th>SVZ_FR4 (z-scored mean abundance (log2))</th><!-- 13 -->
+				<th>stddev Cx_FR1</th><!-- 14 -->
+				<th>stddev Cx_FR2</th><!-- 15 -->
+				<th>stddev Cx_FR3</th><!-- 16 -->
+				<th>stddev Cx_FR4</th><!-- 17 -->
+				<th>stddev OB_FR1</th><!-- 18 -->
+				<th>stddev OB_FR2</th><!-- 19 -->
+				<th>stddev OB_FR3</th><!-- 20 -->
+				<th>stddev OB_FR4</th><!-- 21 -->
+				<th>stddev SVZ_FR1</th><!-- 22 -->
+				<th>stddev SVZ_FR2</th><!-- 23 -->
+				<th>stddev SVZ_FR3</th><!-- 24 -->
+				<th>stddev SVZ_FR4</th><!-- 25 -->
+				<th>Two-way ANOVA p-value</th><!-- 26 -->
+				<th>Matrisome</th><!-- 27 -->
+				<th>Matrisome Divisions</th><!-- 28 -->
+				<th>Matrisome Categories</th><!-- 29 -->
+				</tr>
+			</thead> 
+		</table>
+	</div>
+	</div>
+</body>
+</html>
